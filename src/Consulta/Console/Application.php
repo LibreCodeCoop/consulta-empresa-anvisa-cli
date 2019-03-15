@@ -29,7 +29,7 @@ class Application extends BaseApplication
         return <<<HELP
             Consulta empresa
 
-            Sistama para consulta de empresas no site da ANVISA.
+            Sistema para consulta de empresas no site da ANVISA.
             HELP;
     }
     
