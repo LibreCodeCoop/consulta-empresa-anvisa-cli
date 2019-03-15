@@ -25,7 +25,7 @@ class AboutCommand extends Command
         $output->write(<<<HELP
             <info>Consulta Empresa</info>
             <comment>Coleta de dados de empresas no site da ANVISA.</comment>
-            Veja https://github.com/lyseontech/consutla-empresa/ para mais informações.
+            Veja https://github.com/lyseontech/consulta-empresa/ para mais informações.
 
             HELP
         );
