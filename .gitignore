@@ -1,0 +1,22 @@
+# composer dir and files
+vendor
+
+# Don't commit composer.phar, or the .phar our build tool generates
+*.phar
+
+# IDE
+## Eclipse
+.buildpath
+.project
+.settings
+
+## VI
+*.swp
+
+# storage
+storage
+
+# settings
+.env
+
+*.csv

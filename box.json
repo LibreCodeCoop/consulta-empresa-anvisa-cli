@@ -1,0 +1,22 @@
+{
+    "output": "consulta-empresa.phar",
+    "chmod": "0755",
+    "files": [
+        "LICENSE",
+        "vendor/autoload.php"
+    ],
+    "finder": [
+        {
+            "name": ["*.php"],
+            "exclude": ["tests"],
+            "in": [
+                "src",
+                "vendor/composer",
+                "vendor/symfony/console"
+            ]
+        }
+    ],
+    "main": "bin/anvisa",
+    "stub": true,
+    "web": false
+}
