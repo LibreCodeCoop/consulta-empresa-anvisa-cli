@@ -26,11 +26,11 @@ class Application extends BaseApplication
     
     public function getHelp()
     {
-        return <<<EOT
+        return <<<HELP
             Consulta empresa
 
             Sistama para consulta de empresas no site da ANVISA.
-            EOT;
+            HELP;
     }
     
     /**

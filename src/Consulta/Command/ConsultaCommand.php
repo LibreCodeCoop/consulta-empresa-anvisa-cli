@@ -22,9 +22,9 @@ class ConsultaCommand extends Command
             ->setDefinition([
                 new InputArgument('cnpj', InputArgument::REQUIRED, 'Lista de CNPJ separada por vírgula')
             ])
-            ->setHelp(<<<EOT
+            ->setHelp(<<<HELP
                 O comando <info>consulta</info> realiza consulta de empresa.
-                EOT
+                HELP
             )
         ;
     }

@@ -13,21 +13,21 @@ class AboutCommand extends Command
         $this
             ->setName('about')
             ->setDescription('Exibe informações breves sobre o Consulta Empresa.')
-            ->setHelp(<<<EOT
+            ->setHelp(<<<HELP
                 <info>php consulta-empresa.phar about</info>
 
-                EOT
+                HELP
             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->write(<<<EOT
+        $output->write(<<<HELP
             <info>Consulta Empresa</info>
             <comment>Coleta de dados de empresas no site da ANVISA.</comment>
             Veja https://github.com/lyseontech/consutla-empresa/ para mais informações.
 
-            EOT
+            HELP
         );
     }
 }
