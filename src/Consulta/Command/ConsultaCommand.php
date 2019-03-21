@@ -10,6 +10,7 @@ use Symfony\Component\Console\Input\InputOption;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use ConsultaEmpresa\Scrapers\Cliente;
 use ConsultaEmpresa\Scrapers\Prospect;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 class ConsultaCommand extends Command
 {
@@ -17,6 +18,10 @@ class ConsultaCommand extends Command
      * @var Cliente|Prospect $processor
      */
     private $processor;
+    /**
+     * @var OutputInterface
+     */
+    private $output;
     protected function configure()
     {
         $this
@@ -35,6 +40,7 @@ class ConsultaCommand extends Command
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->output = $output;
         $clientes = $input->getOption('clientes');
         $prospects = $input->getOption('prospects');
         if (!file_exists($clientes) && !file_exists($prospects)) {
@@ -59,13 +65,19 @@ class ConsultaCommand extends Command
         $lastCol = Coordinate::columnIndexFromString($worksheet->getHighestColumn());
         $worksheet->getCellByColumnAndRow($lastCol, 1)->setValue('Status');
         $highestRow = $worksheet->getHighestRow();
+        $this->output->writeln('Importando '. $type);
+        $progressBar = new ProgressBar($this->output, $highestRow);
+        $progressBar->start();
         for ($row = 2; $row <= $highestRow; ++$row) {
             $cnpj = $worksheet->getCellByColumnAndRow(1, $row)->getValue();
             $cnpj = str_pad($cnpj, 14, 0, STR_PAD_LEFT);
             $data = $this->processor->processCnpj($cnpj);
             $this->processor->write($worksheet, $row, $lastCol, $data);
-            if($row == 30) break;
+            $progressBar->advance();
         }
+        $progressBar->setMessage('Salvando arquivo');
+        $progressBar->finish();
+        $this->output->writeln('');
         $this->saveFile($spreadsheet, $filename);
     }
 
