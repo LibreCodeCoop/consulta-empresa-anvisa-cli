@@ -16,7 +16,7 @@
             ]
         }
     ],
-    "main": "bin/anvisa",
+    "main": "bin/consulta-empresa",
     "stub": true,
     "web": false
 }
