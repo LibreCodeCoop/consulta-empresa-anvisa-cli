@@ -18,7 +18,7 @@ docker-compose up -d
 Para coletar clientes, informe a planilha de clientes da seguinte forma:
 
 ```bash
-docker-compose exec php7 bin/consulta-empresa -c nomearquivo.xlsx
+docker-compose exec php7 bin/consulta-empresa --clientes=nomearquivo.xlsx
 ```
 
 ### Formato do arquivo de entrada
@@ -32,7 +32,7 @@ Necessário preencher apenas o CNPJ
 Para coletar prospects, informe a planilha de prospects da seguinte forma:
 
 ```bash
-docker-compose exec php7 bin/consulta-empresa -p prospects.xlsx
+docker-compose exec php7 bin/consulta-empresa --prospects=prospects.xlsx
 ```
 
 ### Formato do arquivo de entrada
