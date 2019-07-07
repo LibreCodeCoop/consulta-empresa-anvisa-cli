@@ -15,7 +15,7 @@
             ]
         }
     ],
-    "main": "bin/consulta-empresa",
+    "main": "bin/consulta-empresa.php",
     "stub": true,
     "web": false
 }
