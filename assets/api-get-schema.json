@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "title": "Validação de schema retornado pela API",
+  "required": [
+    "CLIENTES"
+  ],
+  "properties": {
+    "CLIENTES": {
+      "type": "array",
+      "title": "Lista de clientes",
+      "items": {
+        "type": "object",
+        "title": "Cliente",
+        "required": [
+          "FILIAL",
+          "CNPJ"
+        ],
+        "properties": {
+          "FILIAL": {
+            "type": "string",
+            "title": "Filial, não é utilizado pela importação mas a API solicita esta informação ao devolver os dados importados",
+            "default": "",
+            "examples": [
+              " "
+            ]
+          },
+          "CNPJ": {
+            "type": "string",
+            "title": "CNPJ sem máscara",
+            "default": "",
+            "examples": [
+              "49150956000169"
+            ],
+            "pattern": "^(\\d{14})$"
+          }
+        }
+      }
+    }
+  }
+}

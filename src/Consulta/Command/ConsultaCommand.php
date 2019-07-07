@@ -11,9 +11,17 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use ConsultaEmpresa\Scrapers\Cliente;
 use ConsultaEmpresa\Scrapers\Prospect;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Command\LockableTrait;
+use Symfony\Component\Console\Command\HelpCommand;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Helper\DescriptorHelper;
+use function GuzzleHttp\json_decode;
+use function GuzzleHttp\json_encode;
+use Swaggest\JsonSchema\Schema;
 
 class ConsultaCommand extends Command
 {
+    use LockableTrait;
     /**
      * @var Cliente|Prospect $processor
      */
@@ -28,11 +36,20 @@ class ConsultaCommand extends Command
             ->setName('consulta')
             ->setDescription('Realiza consulta de CNPJ.')
             ->setDefinition([
-                new InputOption('clientes', 'c', InputArgument::OPTIONAL, 'Arquivo de clientes'),
-                new InputOption('prospects', 'p', InputArgument::OPTIONAL, 'Arquivo de prospects')
+                new InputOption('arquivo', 'a', InputOption::VALUE_OPTIONAL, 'Arquivo para importação'),
+                new InputOption('tipo', 't', InputOption::VALUE_OPTIONAL,
+                    "Tipo de importação, <info>c</info> para clientes e <info>p</info> para prospects\n".
+                    "Necessário apenas para importação via API.\n\n".
+                    "O tipo é definido pelo cabeçalho do xlsx em importação via arquivo."),
+                new InputOption('apirequest', 'r', InputOption::VALUE_OPTIONAL, 'Endpoint de API que retorne uma lista de clientes'),
+                new InputOption('apisend', 's', InputOption::VALUE_OPTIONAL, 'Endpoint de API para devolução de dados coletados'),
+                new InputOption('mock', 'm', InputOption::VALUE_OPTIONAL, 'Habilita mock para requisições via API')
             ])
             ->setHelp(<<<HELP
                 O comando <info>consulta</info> realiza consulta de empresa.
+                
+                Maiores informações:
+                    https://github.com/LyseonTech/consulta-empresa-anvisa-cli
                 HELP
             )
         ;
@@ -40,29 +57,66 @@ class ConsultaCommand extends Command
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->output = $output;
-        $clientes = $input->getOption('clientes');
-        $prospects = $input->getOption('prospects');
-        if (!file_exists($clientes) && !file_exists($prospects)) {
-            $output->writeln('<error>Arquivo de Cliente ou Prospect necessário</error>');
-            return 1;
+        if (!$this->lock()) {
+            $output->writeln('Este comando já está em execução em outro processo.');
+            return 0;
         }
-        if ($clientes) {
-            $this->process($clientes, 'cliente');
-        }
-        if ($prospects) {
-            $this->process($prospects, 'prospect');
+        try {
+            $arquivo = $input->getOption('arquivo');
+            $apirequest = $input->getOption('apirequest');
+            $apisend = $input->getOption('apisend');
+            if ($arquivo) {
+                $this->output = $output;
+                $this->processFile($arquivo);
+            } elseif($apirequest || $apisend) {
+                $this->processApi($apirequest, $apisend, $input->hasOption('mock'));
+            } else {
+                throw new \Exception(
+                    '<error>Necessário informar arquivo ou uma API para realizar a importação</error>'
+                );
+            }
+        } catch (\Exception $e) {
+            $output->writeln(
+                $e->getMessage()."\n".
+                "Execute o comando que segue para mais informações:\n".
+                '  consulta --help'
+            );
         }
     }
 
-    private function process($filename, $type)
+    private function processFile($filename)
     {
-        $className = 'ConsultaEmpresa\Scrapers\\'.ucfirst($type);
-        $this->processor = new $className();
+        if (!file_exists($filename)) {
+            throw new \Exception(
+                <<<MESSAGE
+                <error>Arquivo [$filename] não existe</error>
+                
+                Informe um arquivo <info>xlsx</info> para entrada de dados.
+                MESSAGE
+            );
+        }
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filename);
         $worksheet = $spreadsheet->getActiveSheet();
-        // Cria coluna de status
         $lastCol = Coordinate::columnIndexFromString($worksheet->getHighestColumn());
+        switch ($lastCol) {
+            case 8:
+                $type = 'cliente';
+                break;
+            case 16:
+                $type = 'prospect';
+                break;
+            default:
+                throw new \Exception(
+                    <<<MESSAGE
+                    <error>Formato de arquivo inválido</error>
+                    
+                    O arquivo precisa ter 8 colunas para clientes e 16 para prospects
+                    MESSAGE
+                );
+        }
+        $className = 'ConsultaEmpresa\Scrapers\\'.ucfirst($type);
+        $this->processor = new $className();
+        // Cria coluna de status
         $worksheet->getCellByColumnAndRow($lastCol, 1)->setValue('Status');
         $highestRow = $worksheet->getHighestRow();
         $this->output->writeln('Importando '. $type);
@@ -76,9 +130,10 @@ class ConsultaCommand extends Command
             $progressBar->advance();
         }
         $progressBar->setMessage('Salvando arquivo');
+        $this->saveFile($spreadsheet, $filename);
         $progressBar->finish();
         $this->output->writeln('');
-        $this->saveFile($spreadsheet, $filename);
+        return 0;
     }
 
     private function saveFile($spreadsheet, $filename)
@@ -89,5 +144,72 @@ class ConsultaCommand extends Command
         $filename[$key] = 'output-'.$filename[$key];
         $filename = implode(DIRECTORY_SEPARATOR, $filename);
         $writer->save($filename);
+    }
+
+    private function processApi($apirequest, $apisend)
+    {
+        if (!$apirequest) {
+            throw new \Exception("<error>Argumento [apirequest] precisa ter uma url válida</error>");
+        }
+        if (!$apisend) {
+            throw new \Exception("<error>Argumento [apisend] precisa ter uma url válida</error>");
+        }
+
+        // Carrega JSON
+        $list = json_decode(file_get_contents($apirequest));
+        $this->validateSchema($list);
+
+        // Processa
+        $this->processor = new \ConsultaEmpresa\Scrapers\Cliente();
+        foreach ($list->CLIENTES as $key => $cliente) {
+            $data = $this->processor->processCnpj($cliente->CNPJ);
+            $list->ANVISA[$key] = $this->convertRowToJson($cliente, $data);
+        }
+        unset($list->CLIENTES);
+
+        $this->sendDataToApi($list, $apisend);
+    }
+    
+    private function sendDataToApi($list, $apisend)
+    {
+        $processed = json_encode($list);
+        file_get_contents($apisend, false, stream_context_create(['http' =>
+            [
+                'method'  => 'POST',
+                'header'  => 'Content-type: application/x-www-form-urlencoded',
+                'content' => $processed
+            ]
+        ]));
+    }
+
+    /**
+     * Valida o schema dos dados retornados pela API
+     */
+    private function validateSchema($list)
+    {
+        $schema = Schema::import(json_decode(file_get_contents(
+            'assets'.DIRECTORY_SEPARATOR.'api-get-schema.json'
+        )));
+        $schema->in($list);
+    }
+
+    private function convertRowToJson($cliente, $data)
+    {
+        $row['FIL'] = $cliente->FILIAL;
+        $row['CNPJ'] = $cliente->CNPJ;
+        foreach ($data as $key => $value) {
+            switch($key) {
+                case 'correlatos':
+                    $row['XANVCOR'] = $value['autorizacao'];
+                    $row['XDTACOR'] = $value['validade'];
+                case 'medicamentos':
+                    $row['XANVMED'] = $value['autorizacao'];
+                    $row['XDTAMED'] = $value['validade'];
+                case 'saneamentos':
+                    $row['XANVSAN'] = $value['autorizacao'];
+                    $row['XDTASAN'] = $value['validade'];
+            }
+        }
+        return $row;
     }
 }
