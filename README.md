@@ -6,6 +6,8 @@ Consulta empresas na ANVISA utilizando a seguinte URL:
 https://consultas.anvisa.gov.br/#/empresas/empresas/q/?cnpj=<cnpj>
 ```
 
+## Docker
+
 A execução do projeto com Docker é bem simples:
 
 ```bash
@@ -13,6 +15,22 @@ git clone https://github.com/lyseontech/consulta-empresa
 cd consulta-empresa
 docker-compose up -d
 ```
+Nos comandos abaixo, onde você lê `consulta-empresa.phar` coloque o seguinte
+comando:
+
+```bash
+docker-compose exec php7 bin/consulta-empresa.php
+```
+
+exemplo:
+
+```bash
+docker-compose exec php7 bin/consulta-empresa.php consulta --help
+```
+
+## PHAR
+
+Baixe a versão mais recente do projeto em [releases](/consulta-empresa-cli/releases/latest/download/consulta-empresa.phar)
 
 ## Importação via arquivo XLSX
 
@@ -21,7 +39,7 @@ Para coletar clientes ou prospects, informe a planilha de entrada da seguinte
 forma:
 
 ```bash
-docker-compose exec php7 bin/consulta-empresa --arquivo=nomearquivo.xlsx
+consulta-empresa.phar --arquivo=nomearquivo.xlsx
 ```
 
 ### Formato do arquivo de entrada
@@ -53,7 +71,7 @@ Para importar via API será necessário informar a URL que a aplicação irá fa
 requisição e a URL onde a aplicação deverá devolver os dados processados.
 
 ```bash
-docker-compose exec php7 bin/consulta-empresa --apirequest=http://exemplo.com/api/get --apisend=http://exemplo.com/api/save
+dconsulta-empresa.phar --apirequest=http://exemplo.com/api/get --apisend=http://exemplo.com/api/save
 ```
 
 ### apirequest
@@ -84,3 +102,7 @@ respeitem o seguinte exemplo:
   ]
 }
 ```
+
+## Notas para desenvolvedores
+
+Para gerar o arquivo `phar` do projeto execute o script `bin/compile`
