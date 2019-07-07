@@ -96,11 +96,11 @@ respeitem o seguinte exemplo:
     {
       "FIL": " ",
       "CNPJ": "49543956000169",
-      "XANVMED": "01.126.2-80",
+      "XANVMED": "01.876.2-80",
       "XDTAMED": "14/10/2019",
-      "XANVSAN": "01.126.2-80",
+      "XANVSAN": "01.876.2-80",
       "XDTASAN": "14/10/2019",
-      "XANVCOR": "01.126.2-80",
+      "XANVCOR": "01.876.2-80",
       "XDTACOR": "14/10/2019"
     }
   ]
