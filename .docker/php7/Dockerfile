@@ -18,6 +18,9 @@ RUN pecl install xdebug-2.7.0RC2 \
 
 COPY config/php.ini /usr/local/etc/php/conf.d/
 
+RUN curl https://getcomposer.org/composer.phar --output /usr/bin/composer
+RUN chmod +x /usr/bin/composer
+
 WORKDIR /app
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["sh", "/usr/local/bin/entrypoint.sh"]
