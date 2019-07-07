@@ -8,6 +8,8 @@ https://consultas.anvisa.gov.br/#/empresas/empresas/q/?cnpj=<cnpj>
 
 ## Docker
 
+Executar a aplicação via Docker é recomendável para quem queira ter um ambiente isolado e controlado sem ter necessidade de realizar alterações no sistema operacional. Esta é a solução mais recomendável para desenvolvedores do projeto.
+
 A execução do projeto com Docker é bem simples:
 
 ```bash
@@ -30,6 +32,8 @@ docker-compose exec php7 bin/consulta-empresa.php consulta --help
 
 ## PHAR
 
+Executar a aplicação via `phar` é para usuários finais.
+
 Baixe a versão mais recente do projeto em [releases](https://github.com/LyseonTech/consulta-empresa-anvisa-cli/releases/latest/download/consulta-empresa.phar)
 
 ## Importação via arquivo XLSX
@@ -39,7 +43,7 @@ Para coletar clientes ou prospects, informe a planilha de entrada da seguinte
 forma:
 
 ```bash
-consulta-empresa.phar --arquivo=nomearquivo.xlsx
+php consulta-empresa.phar --arquivo=nomearquivo.xlsx
 ```
 
 ### Formato do arquivo de entrada
@@ -71,7 +75,7 @@ Para importar via API será necessário informar a URL que a aplicação irá fa
 requisição e a URL onde a aplicação deverá devolver os dados processados.
 
 ```bash
-dconsulta-empresa.phar --apirequest=http://exemplo.com/api/get --apisend=http://exemplo.com/api/save
+php dconsulta-empresa.phar --apirequest=http://exemplo.com/api/get --apisend=http://exemplo.com/api/save
 ```
 
 ### apirequest
