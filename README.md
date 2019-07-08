@@ -103,6 +103,11 @@ respeitem o seguinte exemplo:
 }
 ```
 
+### Modo verboso
+
+Importação via API possui modo verboso para avaliar possíveis problemas durante
+o acesso a API. Para utilizar o modo verboso, basta passar um `-v`
+
 ## Notas para desenvolvedores
 
 Para gerar o arquivo `phar` do projeto execute o script `bin/compile`
