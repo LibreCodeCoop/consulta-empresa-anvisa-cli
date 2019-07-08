@@ -199,6 +199,8 @@ class ConsultaCommand extends Command
         ]));
         if ($this->output->isVerbose()) {
             $this->output->writeln('URL para devolução de dados: [<info>'.$apisend.'</info>]');
+            $this->output->writeln('Dados enviados para a API:');
+            $this->output->writeln('<info>'.$processed.'</info>');
             $this->output->writeln('Dados retornados pela API:');
             $this->output->writeln('<info>'.$return.'</info>');
         }
