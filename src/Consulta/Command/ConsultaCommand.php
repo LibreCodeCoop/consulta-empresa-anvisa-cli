@@ -42,8 +42,7 @@ class ConsultaCommand extends Command
                     "Necessário apenas para importação via API.\n\n".
                     "O tipo é definido pelo cabeçalho do xlsx em importação via arquivo."),
                 new InputOption('apirequest', 'r', InputOption::VALUE_OPTIONAL, 'Endpoint de API que retorne uma lista de clientes'),
-                new InputOption('apisend', 's', InputOption::VALUE_OPTIONAL, 'Endpoint de API para devolução de dados coletados'),
-                new InputOption('mock', 'm', InputOption::VALUE_OPTIONAL, 'Habilita mock para requisições via API')
+                new InputOption('apisend', 's', InputOption::VALUE_OPTIONAL, 'Endpoint de API para devolução de dados coletados')
             ])
             ->setHelp(<<<HELP
                 O comando <info>consulta</info> realiza consulta de empresa.
@@ -151,19 +150,27 @@ class ConsultaCommand extends Command
         if (!$apirequest) {
             throw new \Exception("<error>Argumento [apirequest] precisa ter uma url válida</error>");
         }
-        $this->output->writeln('Solicitando dados para API');
         if (!$apisend) {
             throw new \Exception("<error>Argumento [apisend] precisa ter uma url válida</error>");
         }
 
         // Carrega JSON
-        $list = json_decode(file_get_contents($apirequest));
-        $this->output->writeln('Validando dados');
+        if ($this->output->isVerbose()) {
+            $this->output->writeln('Solicitando dados da ANVISA e processando. url:['.$apirequest.']');
+        }
+        $json = file_get_contents($apirequest);
+        if ($this->output->isVerbose()) {
+            $this->output->writeln('Retorno da API:');
+            $this->output->writeln('<info>'.$json.'</info>');
+            $this->output->writeln('Validando dados');
+        }
+        $list = json_decode($json);
         $this->validateSchema($list);
 
         // Processa
-        $this->output->writeln('Solicitando dados da ANVISA e processando');
-        $progressBar = new ProgressBar($this->output, count($list->CLIENTES));
+        $total = count($list->CLIENTES);
+        $this->output->writeln('Total de CNPJ a serem processados: <info>'.$total.'</info>');
+        $progressBar = new ProgressBar($this->output, $total);
         $progressBar->start();
         $this->processor = new \ConsultaEmpresa\Scrapers\Cliente();
         foreach ($list->CLIENTES as $key => $cliente) {
@@ -172,23 +179,29 @@ class ConsultaCommand extends Command
             $progressBar->advance();
         }
         unset($list->CLIENTES);
+        $progressBar->finish();
+        $this->output->writeln('');
 
         $this->sendDataToApi($list, $apisend);
-        $progressBar->setMessage('Devolvendo dados para a API');
-        $progressBar->finish();
-        $this->output->writeln('FIM');
+        $progressBar->setMessage('FIM');
+        $this->output->writeln('');
     }
     
     private function sendDataToApi($list, $apisend)
     {
         $processed = json_encode($list);
-        file_get_contents($apisend, false, stream_context_create(['http' =>
+        $return = file_get_contents($apisend, false, stream_context_create(['http' =>
             [
                 'method'  => 'POST',
                 'header'  => 'Content-type: application/x-www-form-urlencoded',
                 'content' => $processed
             ]
         ]));
+        if ($this->output->isVerbose()) {
+            $this->output->writeln('URL para devolução de dados: [<info>'.$apisend.'</info>]');
+            $this->output->writeln('Dados retornados pela API:');
+            $this->output->writeln('<info>'.$return.'</info>');
+        }
     }
 
     /**
@@ -196,9 +209,49 @@ class ConsultaCommand extends Command
      */
     private function validateSchema($list)
     {
-        $schema = Schema::import(json_decode(file_get_contents(
-            'assets'.DIRECTORY_SEPARATOR.'api-get-schema.json'
-        )));
+        $schema = <<<SCHEMA
+            {
+              "type": "object",
+              "title": "Validação de schema retornado pela API",
+              "required": [
+                "CLIENTES"
+              ],
+              "properties": {
+                "CLIENTES": {
+                  "type": "array",
+                  "title": "Lista de clientes",
+                  "items": {
+                    "type": "object",
+                    "title": "Cliente",
+                    "required": [
+                      "FILIAL",
+                      "CNPJ"
+                    ],
+                    "properties": {
+                      "FILIAL": {
+                        "type": "string",
+                        "title": "Filial, não é utilizado pela importação mas a API solicita esta informação ao devolver os dados importados",
+                        "default": "",
+                        "examples": [
+                          " "
+                        ]
+                      },
+                      "CNPJ": {
+                        "type": "string",
+                        "title": "CNPJ sem máscara",
+                        "default": "",
+                        "examples": [
+                          "49150956000169"
+                        ],
+                        "pattern": "^(\\\\d{14})$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            SCHEMA;
+        $schema = Schema::import(\json_decode($schema));
         $schema->in($list);
     }
 
