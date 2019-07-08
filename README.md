@@ -87,7 +87,7 @@ do arquivo:
 
 ### apisend
 
-O endpoint que recebe os dados processados da API deve aceitar arquivos JSON que
+O endpoint que recebe os dados processados da API deve aceitar requisições POST com JSON no body que
 respeitem o seguinte exemplo:
 
 ```json
