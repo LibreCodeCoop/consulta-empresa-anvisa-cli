@@ -42,7 +42,9 @@ class ConsultaCommand extends Command
                     "Necessário apenas para importação via API.\n\n".
                     "O tipo é definido pelo cabeçalho do xlsx em importação via arquivo."),
                 new InputOption('apirequest', 'r', InputOption::VALUE_OPTIONAL, 'Endpoint de API que retorne uma lista de clientes'),
-                new InputOption('apisend', 's', InputOption::VALUE_OPTIONAL, 'Endpoint de API para devolução de dados coletados')
+                new InputOption('apisend', 's', InputOption::VALUE_OPTIONAL, 'Endpoint de API para devolução de dados coletados'),
+                new InputOption('csv', 'c', InputOption::VALUE_OPTIONAL, 'Output para CSV dos dados da API'),
+                new InputOption('limite', 'l', InputOption::VALUE_REQUIRED, 'Limita a quantidade de CNPJ para processar via API')
             ])
             ->setHelp(<<<HELP
                 O comando <info>consulta</info> realiza consulta de empresa.
@@ -65,6 +67,13 @@ class ConsultaCommand extends Command
             $apirequest = $input->getOption('apirequest');
             $apisend = $input->getOption('apisend');
             $this->output = $output;
+            $this->csv = $input->hasOption('csv');
+            $this->limite = $input->getOption('limite');
+            if($this->limite && !is_numeric($this->limite)) {
+                throw new \Exception(
+                    '<error>Limite deve ser numérico</error>'
+                );
+            }
             if ($arquivo) {
                 $this->processFile($arquivo);
             } elseif($apirequest || $apisend) {
@@ -173,10 +182,44 @@ class ConsultaCommand extends Command
         $progressBar = new ProgressBar($this->output, $total);
         $progressBar->start();
         $this->processor = new \ConsultaEmpresa\Scrapers\Cliente();
+        if ($this->csv) {
+            $csv = fopen('output-'.date('YmdHis').'.csv', 'w');
+            fputcsv($csv,[
+                'cnpj',
+                'correlatos-autorizacao',
+                'correlatos-validade',
+                'medicamentos-autorizacao',
+                'medicamentos-validade',
+                'saneantes-autorizacao',
+                'saneantes-validade',
+                'status',
+                'data-consulta'
+            ]);
+        }
         foreach ($list->CLIENTES as $key => $cliente) {
+            if ($this->limite && $key == $this->limite) {
+                break;
+            }
             $data = $this->processor->processCnpj($cliente->CNPJ);
+            if ($this->csv) {
+                $processed = [
+                    $cliente->CNPJ,
+                    $data['correlatos']['autorizacao'],
+                    $data['correlatos']['validade'],
+                    $data['medicamentos']['autorizacao'],
+                    $data['medicamentos']['validade'],
+                    $data['saneantes']['autorizacao'],
+                    $data['saneantes']['validade'],
+                    isset($data['status'])?$data['status']:'',
+                    date('Y-m-d H:i:s')
+                ];
+                fputcsv($csv, $processed);
+            }
             $list->ANVISA[$key] = $this->convertRowToJson($cliente, $data);
             $progressBar->advance();
+        }
+        if ($this->csv) {
+            fclose($csv);
         }
         unset($list->CLIENTES);
         $progressBar->finish();
@@ -189,7 +232,7 @@ class ConsultaCommand extends Command
     
     private function sendDataToApi($list, $apisend)
     {
-        $processed = json_encode($list);
+        $processed = json_encode($list,  JSON_UNESCAPED_SLASHES);
         $return = file_get_contents($apisend, false, stream_context_create(['http' =>
             [
                 'method'  => 'POST',
@@ -261,18 +304,29 @@ class ConsultaCommand extends Command
     {
         $row['FIL'] = $cliente->FILIAL;
         $row['CNPJ'] = $cliente->CNPJ;
-        foreach ($data as $key => $value) {
-            switch($key) {
-                case 'correlatos':
-                    $row['XANVCOR'] = $value['autorizacao'];
-                    $row['XDTACOR'] = $value['validade'];
-                case 'medicamentos':
-                    $row['XANVMED'] = $value['autorizacao'];
-                    $row['XDTAMED'] = $value['validade'];
-                case 'saneamentos':
-                    $row['XANVSAN'] = $value['autorizacao'];
-                    $row['XDTASAN'] = $value['validade'];
-            }
+        $row['XANVCOR'] = $data['correlatos']['autorizacao'];
+        if ($data['correlatos']['validade']) {
+            $row['XDTACOR'] =
+                \DateTime::createFromFormat('d/m/Y', $data['correlatos']['validade'])
+                    ->format('Ymd');
+        } else {
+            $row['XDTACOR'] = '';
+        }
+        $row['XANVMED'] = $data['medicamentos']['autorizacao'];
+        if ($data['medicamentos']['validade']) {
+            $row['XDTAMED'] =
+                \DateTime::createFromFormat('d/m/Y', $data['medicamentos']['validade'])
+                    ->format('Ymd');
+        } else {
+            $row['XDTAMED'] = '';
+        }
+        $row['XANVSAN'] = $data['saneamentos']['autorizacao'];
+        if ($data['saneamentos']['validade']) {
+            $row['XDTASAN'] =
+                \DateTime::createFromFormat('d/m/Y', $data['saneamentos']['validade'])
+                    ->format('Ymd');
+        } else {
+            $row['XDTASAN'] = '';
         }
         return $row;
     }
