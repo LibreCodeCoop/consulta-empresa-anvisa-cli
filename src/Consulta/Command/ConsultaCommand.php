@@ -65,8 +65,8 @@ class ConsultaCommand extends Command
             $arquivo = $input->getOption('arquivo');
             $apirequest = $input->getOption('apirequest');
             $apisend = $input->getOption('apisend');
+            $this->output = $output;
             if ($arquivo) {
-                $this->output = $output;
                 $this->processFile($arquivo);
             } elseif($apirequest || $apisend) {
                 $this->processApi($apirequest, $apisend, $input->hasOption('mock'));
@@ -151,23 +151,32 @@ class ConsultaCommand extends Command
         if (!$apirequest) {
             throw new \Exception("<error>Argumento [apirequest] precisa ter uma url válida</error>");
         }
+        $this->output->writeln('Solicitando dados para API');
         if (!$apisend) {
             throw new \Exception("<error>Argumento [apisend] precisa ter uma url válida</error>");
         }
 
         // Carrega JSON
         $list = json_decode(file_get_contents($apirequest));
+        $this->output->writeln('Validando dados');
         $this->validateSchema($list);
 
         // Processa
+        $this->output->writeln('Solicitando dados da ANVISA e processando');
+        $progressBar = new ProgressBar($this->output, count($list->CLIENTES));
+        $progressBar->start();
         $this->processor = new \ConsultaEmpresa\Scrapers\Cliente();
         foreach ($list->CLIENTES as $key => $cliente) {
             $data = $this->processor->processCnpj($cliente->CNPJ);
             $list->ANVISA[$key] = $this->convertRowToJson($cliente, $data);
+            $progressBar->advance();
         }
         unset($list->CLIENTES);
 
         $this->sendDataToApi($list, $apisend);
+        $progressBar->setMessage('Devolvendo dados para a API');
+        $progressBar->finish();
+        $this->output->writeln('FIM');
     }
     
     private function sendDataToApi($list, $apisend)
