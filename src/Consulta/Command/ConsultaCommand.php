@@ -320,10 +320,10 @@ class ConsultaCommand extends Command
         } else {
             $row['XDTAMED'] = '';
         }
-        $row['XANVSAN'] = $data['saneamentos']['autorizacao'];
-        if ($data['saneamentos']['validade']) {
+        $row['XANVSAN'] = $data['saneantes']['autorizacao'];
+        if ($data['saneantes']['validade']) {
             $row['XDTASAN'] =
-                \DateTime::createFromFormat('d/m/Y', $data['saneamentos']['validade'])
+                \DateTime::createFromFormat('d/m/Y', $data['saneantes']['validade'])
                     ->format('Ymd');
         } else {
             $row['XDTASAN'] = '';
