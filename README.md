@@ -15,6 +15,7 @@ A execução do projeto com Docker é bem simples:
 ```bash
 git clone https://github.com/lyseontech/consulta-empresa
 cd consulta-empresa
+cp .env.develop .env
 docker-compose up -d
 ```
 Nos comandos abaixo, onde você lê `consulta-empresa.phar` coloque o seguinte
