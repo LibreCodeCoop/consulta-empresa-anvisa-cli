@@ -179,7 +179,7 @@ class ConsultaCommand extends Command
         // Processa
         $total = count($list->CLIENTES);
         $this->output->writeln('Total de CNPJ a serem processados: <info>'.$total.'</info>');
-        $progressBar = new ProgressBar($this->output, $total);
+        $progressBar = new ProgressBar($this->output, $this->limite?:$total);
         $progressBar->start();
         $this->processor = new \ConsultaEmpresa\Scrapers\Cliente();
         if ($this->csv) {
