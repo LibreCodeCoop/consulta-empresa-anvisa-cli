@@ -15,6 +15,7 @@ A execução do projeto com Docker é bem simples:
 ```bash
 git clone https://github.com/lyseontech/consulta-empresa
 cd consulta-empresa
+cp .env.develop .env
 docker-compose up -d
 ```
 Nos comandos abaixo, onde você lê `consulta-empresa.phar` coloque o seguinte
@@ -111,9 +112,8 @@ respeitem o seguinte exemplo:
 Apenas no modo API há um argumento a mais na aplicação para gerar um CSV de log.
 Este CSV será gerado com a seguinte estrutura:
 
-| cnpj | correlatos-autorizacao | correlatos-validade | medicamentos-autorizacao | medicamentos-validade | saneantes-autorizacao | saneantes-validade | status | data-consulta |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|   |   |   |   |   |   |   |   |   |   |
+**cnpj**|**correlatos-autorizacao**|**correlatos-validade**|**medicamentos-autorizacao**|**medicamentos-validade**|**saneantes-autorizacao**|**saneantes-validade**|**status**|**data-consulta**
+:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:
 
 ### Limite de dados processados
 
