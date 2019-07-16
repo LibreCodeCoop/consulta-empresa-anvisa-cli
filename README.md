@@ -14,7 +14,7 @@ A execução do projeto com Docker é bem simples:
 
 ```bash
 git clone https://github.com/lyseontech/consulta-empresa-cli
-cd consulta-empresa
+cd consulta-empresa-cli
 cp .env.develop .env
 docker-compose up -d
 ```
