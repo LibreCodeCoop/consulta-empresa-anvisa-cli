@@ -10,7 +10,7 @@ class Cliente extends Scrapper
         $this->collumnMap['status']      = 'I';
     }
 
-    public function processCnpj(string $cnpj)
+    public function processCnpj(string $cnpj): array
     {
         $data = $this->default;
         try {

@@ -15,13 +15,13 @@ class Application extends BaseApplication
     /**
      * {@inheritDoc}
      */
-    public function doRun(InputInterface $input, OutputInterface $output)
+    public function doRun(InputInterface $input, OutputInterface $output): int
     {
         if (PHP_VERSION_ID < 70302) {
             $output->writeln('<error>Suporte apenas para PHP 7.3.2 ou maior.</error>');
         }
 
-        parent::doRun($input, $output);
+        return parent::doRun($input, $output);
     }
     
     public function getHelp()

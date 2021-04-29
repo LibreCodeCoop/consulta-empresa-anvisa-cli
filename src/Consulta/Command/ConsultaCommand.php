@@ -26,7 +26,14 @@ class ConsultaCommand extends Command
      * @var OutputInterface
      */
     private $output;
-    protected function configure()
+    /**
+     * Output para CSV dos dados da API
+     *
+     * @var boolean
+     */
+    protected $csv;
+    protected $limite;
+    protected function configure(): void
     {
         $this
             ->setName('consulta')

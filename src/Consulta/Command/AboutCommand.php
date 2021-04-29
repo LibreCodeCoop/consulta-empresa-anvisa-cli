@@ -8,7 +8,7 @@ use Symfony\Component\Console\Command\Command;
 
 class AboutCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('about')
@@ -20,7 +20,7 @@ class AboutCommand extends Command
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->write(<<<HELP
             <info>Consulta Empresa</info>

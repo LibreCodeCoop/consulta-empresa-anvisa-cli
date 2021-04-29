@@ -18,7 +18,7 @@ class Prospect extends Scrapper
         $this->collumnMap['status']      = 'Q';
     }
 
-    public function processCnpj(string $cnpj)
+    public function processCnpj(string $cnpj): array
     {
         $data = $this->default;
         try {
