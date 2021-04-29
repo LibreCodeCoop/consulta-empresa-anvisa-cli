@@ -40,7 +40,7 @@ class Cliente extends Scrapper
                     'validade'    => date('d/m/Y', strtotime('+105 days'))
                 ];
             }
-            if(!$valid) {
+            if (!$valid) {
                 $data['status'] = 'Tipos de autorização inválidos';
             }
         } catch (\Exception $e) {

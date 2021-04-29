@@ -33,10 +33,14 @@ class ConsultaCommand extends Command
             ->setDescription('Realiza consulta de CNPJ.')
             ->setDefinition([
                 new InputOption('arquivo', 'a', InputOption::VALUE_OPTIONAL, 'Arquivo para importação'),
-                new InputOption('tipo', 't', InputOption::VALUE_OPTIONAL,
+                new InputOption(
+                    'tipo',
+                    't',
+                    InputOption::VALUE_OPTIONAL,
                     "Tipo de importação, <info>c</info> para clientes e <info>p</info> para prospects\n".
                     "Necessário apenas para importação via API.\n\n".
-                    "O tipo é definido pelo cabeçalho do xlsx em importação via arquivo."),
+                    "O tipo é definido pelo cabeçalho do xlsx em importação via arquivo."
+                ),
                 new InputOption('apirequest', 'r', InputOption::VALUE_OPTIONAL, 'Endpoint de API que retorne uma lista de clientes'),
                 new InputOption('apisend', 's', InputOption::VALUE_OPTIONAL, 'Endpoint de API para devolução de dados coletados'),
                 new InputOption('csv', 'c', InputOption::VALUE_OPTIONAL, 'Output para CSV dos dados da API'),
@@ -65,14 +69,14 @@ class ConsultaCommand extends Command
             $this->output = $output;
             $this->csv = $input->hasOption('csv');
             $this->limite = $input->getOption('limite');
-            if($this->limite && !is_numeric($this->limite)) {
+            if ($this->limite && !is_numeric($this->limite)) {
                 throw new \Exception(
                     '<error>Limite deve ser numérico</error>'
                 );
             }
             if ($arquivo) {
                 $this->processFile($arquivo);
-            } elseif($apirequest || $apisend) {
+            } elseif ($apirequest || $apisend) {
                 $this->processApi($apirequest, $apisend, $input->hasOption('mock'));
             } else {
                 throw new \Exception(
@@ -182,7 +186,7 @@ class ConsultaCommand extends Command
         $this->processor = new \ConsultaEmpresa\Scrapers\Cliente();
         if ($this->csv) {
             $csv = fopen('output-'.date('YmdHis').'.csv', 'w');
-            fputcsv($csv,[
+            fputcsv($csv, [
                 'cnpj',
                 'correlatos-autorizacao',
                 'correlatos-validade',
@@ -230,7 +234,7 @@ class ConsultaCommand extends Command
     
     private function sendDataToApi($list, $apisend)
     {
-        $processed = json_encode($list,  JSON_UNESCAPED_SLASHES);
+        $processed = json_encode($list, JSON_UNESCAPED_SLASHES);
         $return = file_get_contents($apisend, false, stream_context_create(['http' =>
             [
                 'method'  => 'POST',

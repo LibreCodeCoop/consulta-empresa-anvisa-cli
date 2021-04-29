@@ -28,15 +28,15 @@ abstract class Scrapper
     protected function getType($response)
     {
         // 8 = Produtos para Saúde (Correlatos)
-        if($response['tipoAutorizacao']['codigo'] == 8) {
+        if ($response['tipoAutorizacao']['codigo'] == 8) {
             return 'correlatos';
         }
         // 3 = Saneantes
-        if($response['tipoAutorizacao']['codigo'] == 3) {
+        if ($response['tipoAutorizacao']['codigo'] == 3) {
             return 'saneantes';
         }
         // 1 = Medicamentos
-        if($response['tipoAutorizacao']['codigo'] == 1) {
+        if ($response['tipoAutorizacao']['codigo'] == 1) {
             if (!$response['tipoAutorizacao']['especial']) {
                 return 'medicamentos';
             }
