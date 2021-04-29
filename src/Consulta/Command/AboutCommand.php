@@ -29,5 +29,6 @@ class AboutCommand extends Command
 
             HELP
         );
+        return Command::SUCCESS;
     }
 }

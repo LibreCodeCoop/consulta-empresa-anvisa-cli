@@ -89,7 +89,9 @@ class ConsultaCommand extends Command
                 "Execute o comando que segue para mais informações:\n".
                 '  consulta --help'
             );
+            return Command::FAILURE;
         }
+        return Command::SUCCESS;
     }
 
     private function processFile($filename)
