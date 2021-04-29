@@ -5,19 +5,15 @@ namespace ConsultaEmpresa\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use ConsultaEmpresa\Scrapers\Cliente;
 use ConsultaEmpresa\Scrapers\Prospect;
 use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Command\LockableTrait;
-use Symfony\Component\Console\Command\HelpCommand;
-use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Helper\DescriptorHelper;
 use function GuzzleHttp\json_decode;
 use function GuzzleHttp\json_encode;
 use Swaggest\JsonSchema\Schema;
+use Symfony\Component\Console\Command\LockableTrait;
 
 class ConsultaCommand extends Command
 {
