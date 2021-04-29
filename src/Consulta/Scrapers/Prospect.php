@@ -18,7 +18,7 @@ class Prospect extends Scrapper
         $this->collumnMap['status']      = 'Q';
     }
 
-    public function processCnpj(string $cnpj)
+    public function processCnpj(string $cnpj): array
     {
         $data = $this->default;
         try {
@@ -42,7 +42,7 @@ class Prospect extends Scrapper
                 );
                 if ($newest['data'] < $processo['dataAutorizacao']) {
                     $newest['data'] = $processo['dataAutorizacao'];
-                    $newest['key'] = $key; 
+                    $newest['key'] = $key;
                 }
                 $type = $this->getType($response);
                 if (!$type) {
@@ -53,7 +53,7 @@ class Prospect extends Scrapper
                     'validade'    => date('d/m/Y', strtotime('+105 days'))
                 ];
             }
-            if(!isset($type)) {
+            if (!isset($type)) {
                 $data['status'] = 'Tipos de autorização inválidos';
             }
             if (isset($funcionamento[$newest['key']]['endereco'])) {

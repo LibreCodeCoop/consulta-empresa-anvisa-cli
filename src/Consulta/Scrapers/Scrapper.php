@@ -1,15 +1,21 @@
 <?php
 namespace ConsultaEmpresa\Scrapers;
 
-use ConsultaEmpresa\Consulta\Consulta;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 abstract class Scrapper
 {
+    /**
+     * @var array
+     */
     protected $default = [
         'correlatos'   => ['autorizacao' => '', 'validade' => ''],
         'medicamentos' => ['autorizacao' => '', 'validade' => ''],
         'saneantes'    => ['autorizacao' => '', 'validade' => ''],
     ];
+    /**
+     * @var array
+     */
     protected $collumnMap = [
         'correlatos' => [
             'autorizacao' => 'E',
@@ -25,25 +31,30 @@ abstract class Scrapper
         ]
     ];
 
-    protected function getType($response)
+    /**
+     * @param array<array> $response
+     * @return string
+     */
+    protected function getType(array $response): string
     {
         // 8 = Produtos para Saúde (Correlatos)
-        if($response['tipoAutorizacao']['codigo'] == 8) {
+        if ($response['tipoAutorizacao']['codigo'] == 8) {
             return 'correlatos';
         }
         // 3 = Saneantes
-        if($response['tipoAutorizacao']['codigo'] == 3) {
+        if ($response['tipoAutorizacao']['codigo'] == 3) {
             return 'saneantes';
         }
         // 1 = Medicamentos
-        if($response['tipoAutorizacao']['codigo'] == 1) {
+        if ($response['tipoAutorizacao']['codigo'] == 1) {
             if (!$response['tipoAutorizacao']['especial']) {
                 return 'medicamentos';
             }
         }
+        return '';
     }
 
-    public function write($worksheet, $row, $lastCol, $data)
+    public function write(Worksheet $worksheet, int $row, int $lastCol, array $data): void
     {
         if ($data) {
             foreach ($data as $type => $value) {

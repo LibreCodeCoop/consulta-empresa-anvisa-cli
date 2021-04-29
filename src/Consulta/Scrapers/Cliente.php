@@ -10,7 +10,7 @@ class Cliente extends Scrapper
         $this->collumnMap['status']      = 'I';
     }
 
-    public function processCnpj(string $cnpj)
+    public function processCnpj(string $cnpj): array
     {
         $data = $this->default;
         try {
@@ -40,7 +40,7 @@ class Cliente extends Scrapper
                     'validade'    => date('d/m/Y', strtotime('+105 days'))
                 ];
             }
-            if(!$valid) {
+            if (!$valid) {
                 $data['status'] = 'Tipos de autorização inválidos';
             }
         } catch (\Exception $e) {
