@@ -30,7 +30,7 @@
 		"symfony/lock": "^5.0@dev",
 		"swaggest/json-schema": "dev-master",
 		"symfony/console": "^5.2",
-		"lyseontech/consulta-empresa-anvisa": "dev-master"
+		"librecodecoop/consulta-empresa-anvisa": "dev-master"
 	},
 	"require-dev" : {
 		"phpunit/phpunit" : "^6.1",
