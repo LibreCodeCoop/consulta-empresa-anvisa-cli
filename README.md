@@ -13,7 +13,7 @@ Executar a aplicação via Docker é recomendável para quem queira ter um ambie
 A execução do projeto com Docker é bem simples:
 
 ```bash
-git clone https://github.com/lyseontech/consulta-empresa-anvisa-cli anvisa
+git clone https://github.com/librecodecoop/consulta-empresa-anvisa-cli anvisa
 cd anvisa
 cp .env.develop .env
 docker-compose up -d
