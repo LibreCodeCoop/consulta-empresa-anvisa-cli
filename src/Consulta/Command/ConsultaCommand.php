@@ -57,7 +57,7 @@ class ConsultaCommand extends Command
                 O comando <info>consulta</info> realiza consulta de empresa.
                 
                 Maiores informações:
-                    https://github.com/LyseonTech/consulta-empresa-anvisa-cli
+                    https://github.com/librecodecoop/consulta-empresa-anvisa-cli
                 HELP
             )
         ;
