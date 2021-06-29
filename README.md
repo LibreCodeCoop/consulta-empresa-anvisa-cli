@@ -35,7 +35,7 @@ docker-compose exec php7 bin/consulta-empresa.php consulta --help
 
 Executar a aplicação via `phar` é para usuários finais.
 
-Baixe a versão mais recente do projeto em [releases](https://github.com/LyseonTech/consulta-empresa-anvisa-cli/releases/latest/download/consulta-empresa.phar)
+Baixe a versão mais recente do projeto em [releases](https://github.com/librecodecoop/consulta-empresa-anvisa-cli/releases/latest/download/consulta-empresa.phar)
 
 ## Importação via arquivo XLSX
 
